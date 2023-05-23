@@ -23,8 +23,6 @@ struct bst_node {
   struct bst_node* left;
   struct bst_node* right;
 };
-
-
 /*
  * This structure represents an entire BST.  Note that we only need a
  * reference to the root node of the tree.
@@ -32,16 +30,12 @@ struct bst_node {
 struct bst {
   struct bst_node* root;
 };
-
-
 struct bst* bst_create() {
   struct bst* bst = malloc(sizeof(struct bst));
   assert(bst);
   bst->root = NULL;
   return bst;
 }
-
-
 void bst_free(struct bst* bst) {
   assert(bst);
 
@@ -55,14 +49,10 @@ void bst_free(struct bst* bst) {
 
   free(bst);
 }
-
-
 int bst_isempty(struct bst* bst) {
   assert(bst);
   return bst->root == NULL;
 }
-
-
 /*
  * Helper function to generate a single BST node containing a given value.
  */
@@ -73,8 +63,6 @@ struct bst_node* _bst_node_create(int val) {
   n->left = n->right = NULL;
   return n;
 }
-
-
 /*
  * Helper function to insert a given value into a subtree of a BST rooted at
  * a given node.  Operates recursively by determining into which subtree (left
@@ -122,8 +110,6 @@ struct bst_node* _bst_subtree_insert(int val, struct bst_node* n) {
   return n;
 
 }
-
-
 void bst_insert(int val, struct bst* bst) {
 
   assert(bst);
@@ -135,8 +121,6 @@ void bst_insert(int val, struct bst* bst) {
   bst->root = _bst_subtree_insert(val, bst->root);
 
 }
-
-
 /*
  * Helper function to return the minimum value in a subtree of a BST.
  */
@@ -150,8 +134,6 @@ int _bst_subtree_min_val(struct bst_node* n) {
   }
   return n->val;
 }
-
-
 /*
  * Helper function to remove a given value from a subtree of a BST rooted at
  * a specified node.  Operates recursively by figuring out whether val is in
@@ -246,8 +228,6 @@ struct bst_node* _bst_subtree_remove(int val, struct bst_node* n) {
   }
 
 }
-
-
 void bst_remove(int val, struct bst* bst) {
 
   assert(bst);
@@ -259,8 +239,6 @@ void bst_remove(int val, struct bst* bst) {
   bst->root = _bst_subtree_remove(val, bst->root);
 
 }
-
-
 int bst_contains(int val, struct bst* bst) {
 
   assert(bst);
@@ -300,22 +278,16 @@ int bst_contains(int val, struct bst* bst) {
    */
   return 0;
 }
-
-
 /*****************************************************************************
  *
  * Below are the functions and structures you'll implement in this assignment.
  *
  *****************************************************************************/
-
-
 /*
  * This is the structure you will use to create an in-order BST iterator.  It
  * is up to you how to define this structure.
  */
 struct bst_iterator;
-
-
 /*
  * This function should return the total number of elements stored in a given
  * BST.
@@ -327,8 +299,20 @@ struct bst_iterator;
  *   Should return the total number of elements stored in bst.
  */
 int bst_size(struct bst* bst) {
-  return 0;
+  int count = 1;
+  if (bst_isempty == 1){
+    return 0;
+  }
+  if (bst->root->left != NULL){
+    count += bst_size(bst->root->left);
+  }
+  if (bst->root->right != NULL){
+    count += bst_size(bst->root->right);
+  }
+  return count;
 }
+
+// struct bst_node* 
 
 
 /*
