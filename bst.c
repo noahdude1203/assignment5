@@ -299,18 +299,35 @@ struct bst_iterator;
  *   Should return the total number of elements stored in bst.
  */
 int bst_size(struct bst* bst) {
-  int count = 1;
-  if (bst_isempty == 1){
+  if (bst->root == NULL){
     return 0;
   }
-  if (bst->root->left != NULL){
-    count += bst_size(bst->root->left);
-  }
-  if (bst->root->right != NULL){
-    count += bst_size(bst->root->right);
-  }
-  return count;
+  return bst_counter(bst->root);
 }
+
+int bst_counter(struct bst_node* bsn){
+  //if both left and right exist then add them and recurse
+  if ((bsn->left != NULL) && (bsn->right != NULL)){
+    // printf("Found two paths");
+    return 1 + bst_counter(bsn->left) + bst_counter(bsn->right);
+  }
+  //if only left exists, add it and recurse
+  if ((bsn->left != NULL)){
+    // printf("Found left path");
+    return 1 + bst_counter(bsn->left);
+  }
+  // if only right exists, add it and recurse
+  if ((bsn->right != NULL)){
+    // printf("Found right path");
+    return 1 + bst_counter(bsn->right);
+  }
+  //if neither branch exists, this adds the current node.
+  // printf("%d", bsn->left);
+  // printf("%d", bsn->right);
+  // printf("Found end of path");
+  return 1;
+}
+
 
 // struct bst_node* 
 
@@ -328,7 +345,35 @@ int bst_size(struct bst* bst) {
  *   Should return the height of bst.
  */
 int bst_height(struct bst* bst) {
-  return 0;
+  if (bst->root == NULL){
+    return -1;
+  }
+  return height_counter(bst->root, 0);
+}
+
+
+int height_counter(struct bst_node* bsn, int height){
+  if ((bsn->left != NULL) && (bsn->right != NULL)){
+    // printf("Found two paths \n");
+    int left = height_counter(bsn->left, height+1);
+    int right = height_counter(bsn->right, height+1);
+    if (left >= right){
+      return left;
+    } else {
+      return right;
+    }
+  }
+
+  if ((bsn->left != NULL)){
+    // printf("Found left paths \n");
+    return height_counter(bsn->left, height+1);
+  }
+  if ((bsn->right != NULL)){
+    // printf("Found right paths \n");
+    return height_counter(bsn->right, height+1);
+  }
+  // printf("Found end of paths \n");
+  return height;
 }
 
 
@@ -345,9 +390,28 @@ int bst_height(struct bst* bst) {
  *   the values of the nodes add up to sum.  Should return 0 otherwise.
  */
 int bst_path_sum(int sum, struct bst* bst) {
+  if (bst->root == NULL){
+    return -1;
+  }
+  return sum_calculator(sum, bst->root->val, bst->root);
+}
+int sum_calculator(int sum, int total, struct bst_node* bsn){
+  if (total > sum){
+    return 0;
+  }
+  if (bsn->right != NULL){
+    return sum_calculator(sum, total + bsn->right->val, bsn->right);
+  }
+  if (bsn->left != NULL){
+    return sum_calculator(sum, total + bsn->left->val, bsn->left);
+  }
+  if (sum == total){
+    if (bsn->left == NULL && bsn->right == NULL){
+      return 1;
+    }
+  }
   return 0;
 }
-
 
 /*
  * This function should allocate and initialize a new in-order BST iterator
