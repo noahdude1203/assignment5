@@ -283,11 +283,7 @@ int bst_contains(int val, struct bst* bst) {
  * Below are the functions and structures you'll implement in this assignment.
  *
  *****************************************************************************/
-/*
- * This is the structure you will use to create an in-order BST iterator.  It
- * is up to you how to define this structure.
- */
-struct bst_iterator;
+
 /*
  * This function should return the total number of elements stored in a given
  * BST.
@@ -391,25 +387,27 @@ int height_counter(struct bst_node* bsn, int height){
  */
 int bst_path_sum(int sum, struct bst* bst) {
   if (bst->root == NULL){
-    return -1;
+    return 0;
   }
   return sum_calculator(sum, bst->root->val, bst->root);
 }
 int sum_calculator(int sum, int total, struct bst_node* bsn){
-  if (total > sum){
-    return 0;
+  //if the total added is greater than the sum, this is a bad node. 
+  if ((sum == total) && (bsn->left == NULL && bsn->right == NULL)){
+    return 1;
   }
+  //if a right node exists, try adding it
   if (bsn->right != NULL){
-    return sum_calculator(sum, total + bsn->right->val, bsn->right);
-  }
-  if (bsn->left != NULL){
-    return sum_calculator(sum, total + bsn->left->val, bsn->left);
-  }
-  if (sum == total){
-    if (bsn->left == NULL && bsn->right == NULL){
+    if (sum_calculator(sum, total + bsn->right->val, bsn->right) == 1){
       return 1;
     }
   }
+  if (bsn->left != NULL){
+    if (sum_calculator(sum, total + bsn->left->val, bsn->left) == 1){
+      return 1;
+    };
+  }
+  
   return 0;
 }
 
@@ -425,9 +423,28 @@ int sum_calculator(int sum, int total, struct bst_node* bsn){
  *   that the first value returned by bst_iterator_next() is the first in-order
  *   value in bst (i.e. the leftmost value in the tree).
  */
+
+/*
+ * This is the structure you will use to create an in-order BST iterator.  It
+ * is up to you how to define this structure.
+ */
+
+struct bst_iterator {
+  struct stack* items;
+  struct bst_node* current;
+};
+
 struct bst_iterator* bst_iterator_create(struct bst* bst) {
-  return NULL;
+  struct bst_iterator* bst_iterator = malloc(sizeof(struct bst_iterator));
+  assert(bst_iterator);
+
+  bst_iterator->items = stack_create();
+
+  bst_iterator->current = bst->root;
+
+  return bst_iterator;
 }
+
 
 /*
  * This function should free all memory allocated to a BST iterator.
@@ -436,7 +453,15 @@ struct bst_iterator* bst_iterator_create(struct bst* bst) {
  *   iter - the iterator whose memory is to be freed.  May not be NULL.
  */
 void bst_iterator_free(struct bst_iterator* iter) {
+  assert(iter);
 
+  // Free the items stack
+  if (iter->items != NULL) {
+    free(iter->items);
+    iter->items = NULL;
+  }
+
+  free(iter);
 }
 
 
@@ -449,6 +474,22 @@ void bst_iterator_free(struct bst_iterator* iter) {
  *   iter - the iterator to be checked for more values.  May not be NULL.
  */
 int bst_iterator_has_next(struct bst_iterator* iter) {
+  //if the stack is not null and not empty, return 1: need to empty stack.
+  if (iter->items != NULL && !stack_isempty(iter->items)) {
+    return 1;
+  } else if (iter->current != NULL) {
+    // push the current node onto the stack and traverse to the leftmost node from the current node. 
+    // ends if there is no smaller node
+    while (iter->current != NULL) {
+      stack_push(iter->items, iter->current);
+      iter->current = iter->current->left;
+    }
+    //check again if the stack is not empty
+    if (!stack_isempty(iter->items)) {
+      return 1;
+    }
+  }
+  // if the stack is empty and current is NULL there is nothing else to add.
   return 0;
 }
 
@@ -462,5 +503,22 @@ int bst_iterator_has_next(struct bst_iterator* iter) {
  *     and must have at least one more value to be returned.
  */
 int bst_iterator_next(struct bst_iterator* iter) {
-  return 0;
+
+  // Traverse to the leftmost node from the current node
+  while (iter->current != NULL) {
+    stack_push(iter->items, iter->current);
+    iter->current = iter->current->left;
+  }
+
+  // Retrieve the next value
+  struct bst_node* node = stack_pop(iter->items);
+  int next_val = node->val;
+
+  // Set the current node to the right child for the next iteration
+  iter->current = node->right;
+
+  // Clean up memory for the popped node
+  free(node);
+
+  return next_val; // Return the value of the next node
 }
